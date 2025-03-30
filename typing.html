@@ -1,3 +1,6 @@
+Извините за проблему. Давайте исправим код, чтобы он был полностью функциональным. Возможно, есть проблема с JavaScript-частью или с подключением обработчиков событий. Вот обновленный исправленный код:
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -123,6 +126,7 @@
         .current-word {
             color: var(--primary);
             font-weight: bold;
+            background-color: rgba(108, 99, 255, 0.1);
         }
         
         .correct {
@@ -390,26 +394,25 @@
                 "Искусственный интеллект и машинное обучение трансформируют множество отраслей, от здравоохранения до финансов. Нейронные сети, имитирующие работу человеческого мозга, способны обрабатывать огромные объемы данных и находить в них закономерности, недоступные человеческому восприятию.",
                 "Биоразнообразие является ключевым фактором устойчивости экосистем. Сокращение численности видов растений и животных может привести к непредсказуемым последствиям для всей планеты. Сохранение природных местообитаний и борьба с браконьерством – важнейшие задачи современного общества.",
                 "Глобализация экономики привела к формированию сложных международных производственных цепочек. Товары, которые мы используем ежедневно, часто состоят из компонентов, произведенных в десятках разных стран. Это повышает эффективность производства, но также создаёт новые риски и зависимости.",
-                "Когнитивные искажения – систематические ошибки в мышлении, влияющие на решения и суждения, которые мы принимаем. Эффект подтверждения, эвристика доступности, ошибка планирования – лишь некоторые из множества предубе
                 "Когнитивные искажения – систематические ошибки в мышлении, влияющие на решения и суждения, которые мы принимаем. Эффект подтверждения, эвристика доступности, ошибка планирования – лишь некоторые из множества предубеждений, которые могут искажать наше восприятие реальности."
             ]
         };
         
-        // Элементы DOM
-        const textDisplay = document.getElementById('text-display');
-        const textInput = document.getElementById('text-input');
-        const timer = document.getElementById('timer');
-        const wpmElement = document.getElementById('wpm');
-        const cpmElement = document.getElementById('cpm');
-        const accuracyElement = document.getElementById('accuracy');
-        const startButton = document.getElementById('start-btn');
-        const resultCard = document.getElementById('result-card');
-        const resultWpm = document.getElementById('result-wpm');
-        const resultCpm = document.getElementById('result-cpm');
-        const resultAccuracy = document.getElementById('result-accuracy');
-        const restartButton = document.getElementById('restart-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        // Объявляем переменные для DOM-элементов
+        let textDisplay;
+        let textInput;
+        let timer;
+        let wpmElement;
+        let cpmElement;
+        let accuracyElement;
+        let startButton;
+        let resultCard;
+        let resultWpm;
+        let resultCpm;
+        let resultAccuracy;
+        let restartButton;
+        let progressBar;
+        let difficultyButtons;
         
         // Переменные состояния
         let currentText = '';
@@ -421,15 +424,38 @@
         let totalTypedChars = 0;
         let currentDifficulty = 'medium';
         
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем все элементы DOM
+            textDisplay = document.getElementById('text-display');
+            textInput = document.getElementById('text-input');
+            timer = document.getElementById('timer');
+            wpmElement = document.getElementById('wpm');
+            cpmElement = document.getElementById('cpm');
+            accuracyElement = document.getElementById('accuracy');
+            startButton = document.getElementById('start-btn');
+            resultCard = document.getElementById('result-card');
+            resultWpm = document.getElementById('result-wpm');
+            resultCpm = document.getElementById('result-cpm');
+            resultAccuracy = document.getElementById('result-accuracy');
+            restartButton = document.getElementById('restart-btn');
+            progressBar = document.getElementById('progress-bar');
+            difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            
+            // Инициализируем приложение
+            init();
+        });
+        
         // Инициализация
         function init() {
             difficultyButtons.forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', function() {
                     if (isTyping) return;
                     
                     difficultyButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    currentDifficulty = button.dataset.difficulty;
+                    currentDifficulty = button.getAttribute('data-difficulty');
+                    loadText();
                 });
             });
             
@@ -440,6 +466,8 @@
             startButton.addEventListener('click', startGame);
             restartButton.addEventListener('click', restartGame);
             textInput.addEventListener('input', checkTyping);
+            
+            console.log('Инициализация завершена');
         }
         
         function loadText() {
@@ -472,22 +500,29 @@
             
             // Скрываем результаты
             resultCard.style.display = 'none';
+            
+            console.log('Текст загружен:', currentText.substring(0, 20) + '...');
         }
         
         function startGame() {
+            console.log('Игра начинается');
             loadText();
             textDisplay.classList.add('active');
             textInput.disabled = false;
+            textInput.value = '';
             textInput.focus();
             startTimer();
             startButton.disabled = true;
             isTyping = true;
             
             // Выделяем первый символ
-            textDisplay.childNodes[0].classList.add('current-word');
+            if (textDisplay.childNodes.length > 0) {
+                textDisplay.childNodes[0].classList.add('current-word');
+            }
         }
         
         function restartGame() {
+            console.log('Перезапуск игры');
             clearInterval(timer_interval);
             timeLeft = 60;
             timer.innerText = `${timeLeft}s`;
@@ -504,6 +539,8 @@
             timeLeft = 60;
             timer.innerText = `${timeLeft}s`;
             
+            clearInterval(timer_interval); // Очищаем предыдущий таймер, если он был
+            
             timer_interval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -515,42 +552,48 @@
                     endGame();
                 }
             }, 1000);
+            
+            console.log('Таймер запущен');
         }
         
         function checkTyping() {
-            const typedChars = textInput.value.split('');
-            totalTypedChars++;
+            const typedText = textInput.value;
+            const typedChars = typedText.split('');
+            totalTypedChars = typedText.length;
             
             // Обновляем прогресс-бар
-            const progress = (charIndex / currentText.length) * 100;
+            const progress = Math.min((charIndex / currentText.length) * 100, 100);
             progressBar.style.width = `${progress}%`;
             
             // Проверяем каждый символ
             let correctChars = 0;
             
-            typedChars.forEach((char, index) => {
-                if (index >= currentText.length) return;
+            // Сначала убираем все классы со всех символов
+            for (let i = 0; i < textDisplay.childNodes.length; i++) {
+                textDisplay.childNodes[i].classList.remove('correct', 'incorrect', 'current-word');
+            }
+            
+            // Затем проверяем каждый введенный символ
+            for (let i = 0; i < typedChars.length; i++) {
+                if (i >= currentText.length) break;
                 
-                const charSpan = textDisplay.childNodes[index];
+                const charSpan = textDisplay.childNodes[i];
                 
-                // Удаляем все классы
-                charSpan.classList.remove('correct', 'incorrect', 'current-word');
-                
-                if (char === currentText[index]) {
+                if (typedChars[i] === currentText[i]) {
                     charSpan.classList.add('correct');
                     correctChars++;
                 } else {
                     charSpan.classList.add('incorrect');
                 }
-            });
+            }
             
             // Выделяем текущий символ
+            charIndex = typedText.length;
             if (charIndex < currentText.length) {
                 textDisplay.childNodes[charIndex].classList.add('current-word');
             }
             
             // Обновляем индекс символа и счетчик ошибок
-            charIndex = typedChars.length;
             mistakes = charIndex - correctChars;
             
             // Проверяем, завершен ли текст
@@ -561,13 +604,15 @@
             
             // Обновляем статистику
             updateStats();
+            
+            console.log(`Набрано ${charIndex}/${currentText.length} символов, ошибок: ${mistakes}`);
         }
         
         function updateStats() {
             // Вычисляем слова в минуту (WPM)
             // Считаем, что среднее слово содержит 5 символов
             const timeElapsed = (60 - timeLeft) / 60; // в минутах
-            const timeElapsedAdjusted = timeElapsed === 0 ? 1/60 : timeElapsed; // предотвращаем деление на ноль
+            const timeElapsedAdjusted = timeElapsed <= 0 ? 1/60 : timeElapsed; // предотвращаем деление на ноль
             
             const wpm = Math.round((charIndex / 5) / timeElapsedAdjusted);
             const cpm = Math.round(charIndex / timeElapsedAdjusted);
@@ -581,9 +626,12 @@
             wpmElement.innerText = wpm;
             cpmElement.innerText = cpm;
             accuracyElement.innerText = `${accuracy}%`;
+            
+            console.log(`Статистика обновлена: WPM=${wpm}, CPM=${cpm}, Точность=${accuracy}%`);
         }
         
         function endGame() {
+            console.log('Игра завершена');
             clearInterval(timer_interval);
             textInput.disabled = true;
             textDisplay.classList.remove('active');
@@ -596,9 +644,6 @@
             resultAccuracy.innerText = accuracyElement.innerText;
             resultCard.style.display = 'block';
         }
-        
-        // Инициализируем приложение
-        window.addEventListener('load', init);
     </script>
 </body>
 </html>
