@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Пинг-Понг</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 500px;
+        }
+        #canvas {
+            background-color: #000;
+            border: 2px solid #fff;
+        }
+        #score {
+            color: white;
+            font-size: 24px;
+            position: absolute;
+            top: -40px;
+            width: 100%;
+            text-align: center;
+        }
+        #start-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">0 : 0</div>
+        <canvas id="canvas" width="800" height="500"></canvas>
+        <button id="start-button">Начать игру</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('start-button');
+        const scoreDisplay = document.getElementById('score');
+        
+        // Настройки игры
+        const paddleHeight = 100;
+        const paddleWidth = 15;
+        const ballRadius = 10;
+        let ballSpeed = 5;
+        let paddleSpeed = 8;
+        
+        // Игровые объекты
+        const leftPaddle = {
+            x: 30,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0,
+            score: 0
+        };
+        
+        const rightPaddle = {
+            x: canvas.width - 30 - paddleWidth,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0,
+            score: 0
+        };
+        
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            dx: ballSpeed,
+            dy: ballSpeed,
+            radius: ballRadius
+        };
+        
+        // Управление
+        const keys = {
+            w: false,
+            s: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+        
+        let gameRunning = false;
+        
+        // Обработчики событий
+        window.addEventListener('keydown', e => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+        });
+        
+        window.addEventListener('keyup', e => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+        
+        startButton.addEventListener('click', () => {
+            startGame();
+        });
+        
+        function startGame() {
+            if (gameRunning) return;
+            
+            // Сброс позиций
+            resetBall();
+            leftPaddle.y = canvas.height / 2 - paddleHeight / 2;
+            rightPaddle.y = canvas.height / 2 - paddleHeight / 2;
+            
+            startButton.style.display = 'none';
+            gameRunning = true;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            
+            // Случайное направление
+            ball.dx = (Math.random() > 0.5 ? 1 : -1) * ballSpeed;
+            ball.dy = (Math.random() * 2 - 1) * ballSpeed;
+        }
+        
+        function updateScore() {
+            scoreDisplay.textContent = `${leftPaddle.score} : ${rightPaddle.score}`;
+        }
+        
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function update() {
+            // Обновление позиций ракеток
+            if (keys.w) leftPaddle.y = Math.max(0, leftPaddle.y - paddleSpeed);
+            if (keys.s) leftPaddle.y = Math.min(canvas.height - leftPaddle.height, leftPaddle.y + paddleSpeed);
+            
+            if (keys.ArrowUp) rightPaddle.y = Math.max(0, rightPaddle.y - paddleSpeed);
+            if (keys.ArrowDown) rightPaddle.y = Math.min(canvas.height - rightPaddle.height, rightPaddle.y + paddleSpeed);
+            
+            // Обновление позиции мяча
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+            
+            // Отскок от верхней и нижней стенок
+            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
+                ball.dy = -ball.dy;
+            }
+            
+            // Отскок от ракеток
+            if (
+                ball.x - ball.radius < leftPaddle.x + leftPaddle.width &&
+                ball.y > leftPaddle.y &&
+                ball.y < leftPaddle.y + leftPaddle.height &&
+                ball.dx < 0
+            ) {
+                ball.dx = -ball.dx;
+                // Изменение угла в зависимости от места удара
+                const hitPosition = (ball.y - leftPaddle.y) / leftPaddle.height;
+                ball.dy = (hitPosition - 0.5) * 2 * ballSpeed;
+            }
+            
+            if (
+                ball.x + ball.radius > rightPaddle.x &&
+                ball.y > rightPaddle.y &&
+                ball.y < rightPaddle.y + rightPaddle.height &&
+                ball.dx > 0
+            ) {
+                ball.dx = -ball.dx;
+                // Изменение угла в зависимости от места удара
+                const hitPosition = (ball.y - rightPaddle.y) / rightPaddle.height;
+                ball.dy = (hitPosition - 0.5) * 2 * ballSpeed;
+            }
+            
+            // Проверка на гол
+            if (ball.x - ball.radius < 0) {
+                rightPaddle.score++;
+                updateScore();
+                resetBall();
+            }
+            
+            if (ball.x + ball.radius > canvas.width) {
+                leftPaddle.score++;
+                updateScore();
+                resetBall();
+            }
+        }
+        
+        function render() {
+            // Очистка холста
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Рисование центральной линии
+            ctx.beginPath();
+            ctx.setLineDash([10, 10]);
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Рисование ракеток
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
+            ctx.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+            
+            // Рисование мяча
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Начальное отображение
+        render();
+        updateScore();
+    </script>
+</body>
+</html>
