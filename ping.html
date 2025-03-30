@@ -1,240 +1,604 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Пинг-Понг</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedType - Тест скорости печати</title>
     <style>
-        body {
+        :root {
+            --primary: #6C63FF;
+            --secondary: #F8F9FA;
+            --dark: #212529;
+            --light: #F8F9FA;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #FFC107;
+        }
+        
+        * {
             margin: 0;
-            background-color: #222;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
+            flex-direction: column;
         }
-        #game-container {
-            position: relative;
-            width: 800px;
-            height: 500px;
-        }
-        #canvas {
-            background-color: #000;
-            border: 2px solid #fff;
-        }
-        #score {
+        
+        header {
+            background-color: var(--primary);
             color: white;
-            font-size: 24px;
-            position: absolute;
-            top: -40px;
-            width: 100%;
+            padding: 1.5rem 0;
             text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        #start-button {
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        main {
+            max-width: 800px;
+            width: 90%;
+            margin: 2rem auto;
+            flex-grow: 1;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 0 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .text-display {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            position: relative;
+            min-height: 150px;
+        }
+        
+        .text-display.active {
+            border: 2px solid var(--primary);
+        }
+        
+        .current-word {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .correct {
+            color: var(--success);
+        }
+        
+        .incorrect {
+            color: var(--danger);
+            text-decoration: underline;
+        }
+        
+        .input-area {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+        }
+        
+        .timer {
             position: absolute;
             top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #4CAF50;
-            color: white;
+            right: 1rem;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5952d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .result-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+        
+        .result-item {
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .result-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0;
+            transition: width 0.3s;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--dark);
+            color: white;
+            margin-top: auto;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .difficulty-btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficulty-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .difficulty-btn:hover {
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                margin: 0.5rem 0;
+            }
+            
+            .result-details {
+                flex-direction: column;
+            }
+            
+            .result-item {
+                margin: 1rem 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="score">0 : 0</div>
-        <canvas id="canvas" width="800" height="500"></canvas>
-        <button id="start-button">Начать игру</button>
-    </div>
-
+    <header>
+        <div class="logo">SpeedType</div>
+        <div class="subtitle">Проверь свою скорость печати</div>
+    </header>
+    
+    <main>
+        <div class="card">
+            <h2 class="card-title">Тест скорости печати</h2>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn" data-difficulty="easy">Легко</button>
+                <button class="difficulty-btn active" data-difficulty="medium">Средне</button>
+                <button class="difficulty-btn" data-difficulty="hard">Сложно</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="wpm">0</div>
+                    <div class="stat-label">Слов в минуту</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="cpm">0</div>
+                    <div class="stat-label">Символов в минуту</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Точность</div>
+                </div>
+            </div>
+            
+            <div class="text-display" id="text-display"></div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" class="text-input" id="text-input" placeholder="Начните печатать здесь..." autocomplete="off" disabled>
+                <div class="timer" id="timer">60s</div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" id="start-btn">Начать</button>
+            </div>
+        </div>
+        
+        <div class="card result-card" id="result-card">
+            <h2 class="result-title">Результаты</h2>
+            
+            <div class="result-details">
+                <div class="result-item">
+                    <div class="result-value" id="result-wpm">0</div>
+                    <div class="result-label">Слов в минуту</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="result-cpm">0</div>
+                    <div class="result-label">Символов в минуту</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="result-accuracy">0%</div>
+                    <div class="result-label">Точность</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="restart-btn">Попробовать снова</button>
+        </div>
+    </main>
+    
+    <footer>
+        <p>SpeedType &copy; 2025 - Улучшайте свою скорость печати каждый день</p>
+    </footer>
+    
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const startButton = document.getElementById('start-button');
-        const scoreDisplay = document.getElementById('score');
-        
-        // Настройки игры
-        const paddleHeight = 100;
-        const paddleWidth = 15;
-        const ballRadius = 10;
-        let ballSpeed = 5;
-        let paddleSpeed = 8;
-        
-        // Игровые объекты
-        const leftPaddle = {
-            x: 30,
-            y: canvas.height / 2 - paddleHeight / 2,
-            width: paddleWidth,
-            height: paddleHeight,
-            dy: 0,
-            score: 0
+        // Тексты для печати по уровням сложности
+        const texts = {
+            easy: [
+                "Мама мыла раму. Папа читал газету. День был солнечным и теплым. Дети играли во дворе.",
+                "Утром я люблю пить кофе с молоком и есть бутерброды с сыром. Это придает мне энергии на весь день.",
+                "Кошка спит на подоконнике. Солнце светит ярко. За окном поют птицы. Весна пришла.",
+                "Я люблю читать книги в парке. Особенно когда погода хорошая и вокруг тихо.",
+                "Мой друг купил новый велосипед. Теперь мы вместе катаемся по выходным в парке."
+            ],
+            medium: [
+                "Технологии стремительно меняют нашу жизнь. Каждый день появляются новые устройства, которые делают нашу жизнь проще и удобнее. Однако не стоит забывать о живом общении с близкими людьми.",
+                "Изучение иностранных языков открывает перед человеком новые возможности. Знание нескольких языков помогает лучше понимать культуру других народов и расширяет кругозор.",
+                "Регулярные физические упражнения положительно влияют на здоровье человека. Даже небольшая ежедневная нагрузка может значительно улучшить самочувствие и настроение.",
+                "Правильное питание является основой здорового образа жизни. Важно употреблять разнообразные продукты, богатые витаминами и минералами, и следить за размером порций.",
+                "Чтение книг развивает воображение и обогащает словарный запас. Литература помогает нам увидеть мир глазами других людей и лучше понять себя."
+            ],
+            hard: [
+                "Квантовая физика изучает поведение материи и энергии на атомном и субатомном уровнях. Согласно принципу неопределенности Гейзенберга, невозможно одновременно точно измерить положение и импульс частицы. Это фундаментальное ограничение, которое меняет наше понимание реальности.",
+                "Искусственный интеллект и машинное обучение трансформируют множество отраслей, от здравоохранения до финансов. Нейронные сети, имитирующие работу человеческого мозга, способны обрабатывать огромные объемы данных и находить в них закономерности, недоступные человеческому восприятию.",
+                "Биоразнообразие является ключевым фактором устойчивости экосистем. Сокращение численности видов растений и животных может привести к непредсказуемым последствиям для всей планеты. Сохранение природных местообитаний и борьба с браконьерством – важнейшие задачи современного общества.",
+                "Глобализация экономики привела к формированию сложных международных производственных цепочек. Товары, которые мы используем ежедневно, часто состоят из компонентов, произведенных в десятках разных стран. Это повышает эффективность производства, но также создаёт новые риски и зависимости.",
+                "Когнитивные искажения – систематические ошибки в мышлении, влияющие на решения и суждения, которые мы принимаем. Эффект подтверждения, эвристика доступности, ошибка планирования – лишь некоторые из множества предубе
+                "Когнитивные искажения – систематические ошибки в мышлении, влияющие на решения и суждения, которые мы принимаем. Эффект подтверждения, эвристика доступности, ошибка планирования – лишь некоторые из множества предубеждений, которые могут искажать наше восприятие реальности."
+            ]
         };
         
-        const rightPaddle = {
-            x: canvas.width - 30 - paddleWidth,
-            y: canvas.height / 2 - paddleHeight / 2,
-            width: paddleWidth,
-            height: paddleHeight,
-            dy: 0,
-            score: 0
-        };
+        // Элементы DOM
+        const textDisplay = document.getElementById('text-display');
+        const textInput = document.getElementById('text-input');
+        const timer = document.getElementById('timer');
+        const wpmElement = document.getElementById('wpm');
+        const cpmElement = document.getElementById('cpm');
+        const accuracyElement = document.getElementById('accuracy');
+        const startButton = document.getElementById('start-btn');
+        const resultCard = document.getElementById('result-card');
+        const resultWpm = document.getElementById('result-wpm');
+        const resultCpm = document.getElementById('result-cpm');
+        const resultAccuracy = document.getElementById('result-accuracy');
+        const restartButton = document.getElementById('restart-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
         
-        const ball = {
-            x: canvas.width / 2,
-            y: canvas.height / 2,
-            dx: ballSpeed,
-            dy: ballSpeed,
-            radius: ballRadius
-        };
+        // Переменные состояния
+        let currentText = '';
+        let timeLeft = 60;
+        let timer_interval = null;
+        let charIndex = 0;
+        let mistakes = 0;
+        let isTyping = false;
+        let totalTypedChars = 0;
+        let currentDifficulty = 'medium';
         
-        // Управление
-        const keys = {
-            w: false,
-            s: false,
-            ArrowUp: false,
-            ArrowDown: false
-        };
+        // Инициализация
+        function init() {
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (isTyping) return;
+                    
+                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentDifficulty = button.dataset.difficulty;
+                });
+            });
+            
+            // Загрузка случайного текста
+            loadText();
+            
+            // Обработчики событий
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', restartGame);
+            textInput.addEventListener('input', checkTyping);
+        }
         
-        let gameRunning = false;
-        
-        // Обработчики событий
-        window.addEventListener('keydown', e => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = true;
-            }
-        });
-        
-        window.addEventListener('keyup', e => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = false;
-            }
-        });
-        
-        startButton.addEventListener('click', () => {
-            startGame();
-        });
+        function loadText() {
+            const textArray = texts[currentDifficulty];
+            const randomIndex = Math.floor(Math.random() * textArray.length);
+            currentText = textArray[randomIndex];
+            
+            textDisplay.innerHTML = '';
+            
+            // Разбиваем текст на символы для отображения
+            currentText.split('').forEach(char => {
+                const charSpan = document.createElement('span');
+                charSpan.innerText = char;
+                textDisplay.appendChild(charSpan);
+            });
+            
+            // Сбрасываем все переменные
+            charIndex = 0;
+            mistakes = 0;
+            isTyping = false;
+            totalTypedChars = 0;
+            
+            // Сбрасываем статистику
+            wpmElement.innerText = '0';
+            cpmElement.innerText = '0';
+            accuracyElement.innerText = '0%';
+            
+            // Сбрасываем прогресс
+            progressBar.style.width = '0%';
+            
+            // Скрываем результаты
+            resultCard.style.display = 'none';
+        }
         
         function startGame() {
-            if (gameRunning) return;
+            loadText();
+            textDisplay.classList.add('active');
+            textInput.disabled = false;
+            textInput.focus();
+            startTimer();
+            startButton.disabled = true;
+            isTyping = true;
             
-            // Сброс позиций
-            resetBall();
-            leftPaddle.y = canvas.height / 2 - paddleHeight / 2;
-            rightPaddle.y = canvas.height / 2 - paddleHeight / 2;
-            
-            startButton.style.display = 'none';
-            gameRunning = true;
-            requestAnimationFrame(gameLoop);
+            // Выделяем первый символ
+            textDisplay.childNodes[0].classList.add('current-word');
         }
         
-        function resetBall() {
-            ball.x = canvas.width / 2;
-            ball.y = canvas.height / 2;
+        function restartGame() {
+            clearInterval(timer_interval);
+            timeLeft = 60;
+            timer.innerText = `${timeLeft}s`;
             
-            // Случайное направление
-            ball.dx = (Math.random() > 0.5 ? 1 : -1) * ballSpeed;
-            ball.dy = (Math.random() * 2 - 1) * ballSpeed;
+            textInput.value = '';
+            textInput.disabled = true;
+            textDisplay.classList.remove('active');
+            startButton.disabled = false;
+            
+            loadText();
         }
         
-        function updateScore() {
-            scoreDisplay.textContent = `${leftPaddle.score} : ${rightPaddle.score}`;
+        function startTimer() {
+            timeLeft = 60;
+            timer.innerText = `${timeLeft}s`;
+            
+            timer_interval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timer.innerText = `${timeLeft}s`;
+                    
+                    // Обновляем статистику во время печати
+                    updateStats();
+                } else {
+                    endGame();
+                }
+            }, 1000);
         }
         
-        function gameLoop() {
-            if (!gameRunning) return;
+        function checkTyping() {
+            const typedChars = textInput.value.split('');
+            totalTypedChars++;
             
-            update();
-            render();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function update() {
-            // Обновление позиций ракеток
-            if (keys.w) leftPaddle.y = Math.max(0, leftPaddle.y - paddleSpeed);
-            if (keys.s) leftPaddle.y = Math.min(canvas.height - leftPaddle.height, leftPaddle.y + paddleSpeed);
+            // Обновляем прогресс-бар
+            const progress = (charIndex / currentText.length) * 100;
+            progressBar.style.width = `${progress}%`;
             
-            if (keys.ArrowUp) rightPaddle.y = Math.max(0, rightPaddle.y - paddleSpeed);
-            if (keys.ArrowDown) rightPaddle.y = Math.min(canvas.height - rightPaddle.height, rightPaddle.y + paddleSpeed);
+            // Проверяем каждый символ
+            let correctChars = 0;
             
-            // Обновление позиции мяча
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            typedChars.forEach((char, index) => {
+                if (index >= currentText.length) return;
+                
+                const charSpan = textDisplay.childNodes[index];
+                
+                // Удаляем все классы
+                charSpan.classList.remove('correct', 'incorrect', 'current-word');
+                
+                if (char === currentText[index]) {
+                    charSpan.classList.add('correct');
+                    correctChars++;
+                } else {
+                    charSpan.classList.add('incorrect');
+                }
+            });
             
-            // Отскок от верхней и нижней стенок
-            if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) {
-                ball.dy = -ball.dy;
+            // Выделяем текущий символ
+            if (charIndex < currentText.length) {
+                textDisplay.childNodes[charIndex].classList.add('current-word');
             }
             
-            // Отскок от ракеток
-            if (
-                ball.x - ball.radius < leftPaddle.x + leftPaddle.width &&
-                ball.y > leftPaddle.y &&
-                ball.y < leftPaddle.y + leftPaddle.height &&
-                ball.dx < 0
-            ) {
-                ball.dx = -ball.dx;
-                // Изменение угла в зависимости от места удара
-                const hitPosition = (ball.y - leftPaddle.y) / leftPaddle.height;
-                ball.dy = (hitPosition - 0.5) * 2 * ballSpeed;
+            // Обновляем индекс символа и счетчик ошибок
+            charIndex = typedChars.length;
+            mistakes = charIndex - correctChars;
+            
+            // Проверяем, завершен ли текст
+            if (charIndex === currentText.length) {
+                endGame();
+                return;
             }
             
-            if (
-                ball.x + ball.radius > rightPaddle.x &&
-                ball.y > rightPaddle.y &&
-                ball.y < rightPaddle.y + rightPaddle.height &&
-                ball.dx > 0
-            ) {
-                ball.dx = -ball.dx;
-                // Изменение угла в зависимости от места удара
-                const hitPosition = (ball.y - rightPaddle.y) / rightPaddle.height;
-                ball.dy = (hitPosition - 0.5) * 2 * ballSpeed;
-            }
-            
-            // Проверка на гол
-            if (ball.x - ball.radius < 0) {
-                rightPaddle.score++;
-                updateScore();
-                resetBall();
-            }
-            
-            if (ball.x + ball.radius > canvas.width) {
-                leftPaddle.score++;
-                updateScore();
-                resetBall();
-            }
+            // Обновляем статистику
+            updateStats();
         }
         
-        function render() {
-            // Очистка холста
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function updateStats() {
+            // Вычисляем слова в минуту (WPM)
+            // Считаем, что среднее слово содержит 5 символов
+            const timeElapsed = (60 - timeLeft) / 60; // в минутах
+            const timeElapsedAdjusted = timeElapsed === 0 ? 1/60 : timeElapsed; // предотвращаем деление на ноль
             
-            // Рисование центральной линии
-            ctx.beginPath();
-            ctx.setLineDash([10, 10]);
-            ctx.moveTo(canvas.width / 2, 0);
-            ctx.lineTo(canvas.width / 2, canvas.height);
-            ctx.strokeStyle = '#fff';
-            ctx.stroke();
-            ctx.setLineDash([]);
+            const wpm = Math.round((charIndex / 5) / timeElapsedAdjusted);
+            const cpm = Math.round(charIndex / timeElapsedAdjusted);
             
-            // Рисование ракеток
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
-            ctx.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+            // Вычисляем точность
+            const accuracy = totalTypedChars > 0 
+                ? Math.round(((totalTypedChars - mistakes) / totalTypedChars) * 100) 
+                : 0;
             
-            // Рисование мяча
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-            ctx.fill();
+            // Обновляем элементы DOM
+            wpmElement.innerText = wpm;
+            cpmElement.innerText = cpm;
+            accuracyElement.innerText = `${accuracy}%`;
         }
         
-        // Начальное отображение
-        render();
-        updateScore();
+        function endGame() {
+            clearInterval(timer_interval);
+            textInput.disabled = true;
+            textDisplay.classList.remove('active');
+            startButton.disabled = false;
+            isTyping = false;
+            
+            // Показываем результаты
+            resultWpm.innerText = wpmElement.innerText;
+            resultCpm.innerText = cpmElement.innerText;
+            resultAccuracy.innerText = accuracyElement.innerText;
+            resultCard.style.display = 'block';
+        }
+        
+        // Инициализируем приложение
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
