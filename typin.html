@@ -1,0 +1,648 @@
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeedType - Тест скорости печати</title>
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #F8F9FA;
+            --dark: #212529;
+            --light: #F8F9FA;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #FFC107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.5rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        main {
+            max-width: 800px;
+            width: 90%;
+            margin: 2rem auto;
+            flex-grow: 1;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin: 0 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .text-display {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            position: relative;
+            min-height: 150px;
+        }
+        
+        .text-display.active {
+            border: 2px solid var(--primary);
+        }
+        
+        .current-word {
+            color: var(--primary);
+            font-weight: bold;
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        .correct {
+            color: var(--success);
+        }
+        
+        .incorrect {
+            color: var(--danger);
+            text-decoration: underline;
+        }
+        
+        .input-area {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .text-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+        }
+        
+        .timer {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5952d4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .result-details {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+        
+        .result-item {
+            text-align: center;
+        }
+        
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .result-label {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0;
+            transition: width 0.3s;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--dark);
+            color: white;
+            margin-top: auto;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .difficulty-btn {
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficulty-btn.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .difficulty-btn:hover {
+            background-color: rgba(108, 99, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                margin: 0.5rem 0;
+            }
+            
+            .result-details {
+                flex-direction: column;
+            }
+            
+            .result-item {
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">SpeedType</div>
+        <div class="subtitle">Проверь свою скорость печати</div>
+    </header>
+    
+    <main>
+        <div class="card">
+            <h2 class="card-title">Тест скорости печати</h2>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn" data-difficulty="easy">Легко</button>
+                <button class="difficulty-btn active" data-difficulty="medium">Средне</button>
+                <button class="difficulty-btn" data-difficulty="hard">Сложно</button>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="wpm">0</div>
+                    <div class="stat-label">Слов в минуту</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="cpm">0</div>
+                    <div class="stat-label">Символов в минуту</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Точность</div>
+                </div>
+            </div>
+            
+            <div class="text-display" id="text-display"></div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" class="text-input" id="text-input" placeholder="Начните печатать здесь..." autocomplete="off" disabled>
+                <div class="timer" id="timer">60s</div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-primary" id="start-btn">Начать</button>
+            </div>
+        </div>
+        
+        <div class="card result-card" id="result-card">
+            <h2 class="result-title">Результаты</h2>
+            
+            <div class="result-details">
+                <div class="result-item">
+                    <div class="result-value" id="result-wpm">0</div>
+                    <div class="result-label">Слов в минуту</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="result-cpm">0</div>
+                    <div class="result-label">Символов в минуту</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="result-accuracy">0%</div>
+                    <div class="result-label">Точность</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="restart-btn">Попробовать снова</button>
+        </div>
+    </main>
+    
+    <footer>
+        <p>SpeedType &copy; 2025 - Улучшайте свою скорость печати каждый день</p>
+    </footer>
+    
+    <script>
+        // Тексты для печати по уровням сложности
+        const texts = {
+            easy: [
+                "Мама мыла раму. Папа читал газету. День был солнечным и теплым. Дети играли во дворе.",
+                "Утром я люблю пить кофе с молоком и есть бутерброды с сыром. Это придает мне энергии на весь день.",
+                "Кошка спит на подоконнике. Солнце светит ярко. За окном поют птицы. Весна пришла.",
+                "Я люблю читать книги в парке. Особенно когда погода хорошая и вокруг тихо.",
+                "Мой друг купил новый велосипед. Теперь мы вместе катаемся по выходным в парке."
+            ],
+            medium: [
+                "Технологии стремительно меняют нашу жизнь. Каждый день появляются новые устройства, которые делают нашу жизнь проще и удобнее. Однако не стоит забывать о живом общении с близкими людьми.",
+                "Изучение иностранных языков открывает перед человеком новые возможности. Знание нескольких языков помогает лучше понимать культуру других народов и расширяет кругозор.",
+                "Регулярные физические упражнения положительно влияют на здоровье человека. Даже небольшая ежедневная нагрузка может значительно улучшить самочувствие и настроение.",
+                "Правильное питание является основой здорового образа жизни. Важно употреблять разнообразные продукты, богатые витаминами и минералами, и следить за размером порций.",
+                "Чтение книг развивает воображение и обогащает словарный запас. Литература помогает нам увидеть мир глазами других людей и лучше понять себя."
+            ],
+            hard: [
+                "Квантовая физика изучает поведение материи и энергии на атомном и субатомном уровнях. Согласно принципу неопределенности Гейзенберга, невозможно одновременно точно измерить положение и импульс частицы. Это фундаментальное ограничение, которое меняет наше понимание реальности.",
+                "Искусственный интеллект и машинное обучение трансформируют множество отраслей, от здравоохранения до финансов. Нейронные сети, имитирующие работу человеческого мозга, способны обрабатывать огромные объемы данных и находить в них закономерности, недоступные человеческому восприятию.",
+                "Биоразнообразие является ключевым фактором устойчивости экосистем. Сокращение численности видов растений и животных может привести к непредсказуемым последствиям для всей планеты. Сохранение природных местообитаний и борьба с браконьерством – важнейшие задачи современного общества.",
+                "Глобализация экономики привела к формированию сложных международных производственных цепочек. Товары, которые мы используем ежедневно, часто состоят из компонентов, произведенных в десятках разных стран. Это повышает эффективность производства, но также создаёт новые риски и зависимости.",
+                "Когнитивные искажения – систематические ошибки в мышлении, влияющие на решения и суждения, которые мы принимаем. Эффект подтверждения, эвристика доступности, ошибка планирования – лишь некоторые из множества предубеждений, которые могут искажать наше восприятие реальности."
+            ]
+        };
+        
+        // Объявляем переменные для DOM-элементов
+        let textDisplay;
+        let textInput;
+        let timer;
+        let wpmElement;
+        let cpmElement;
+        let accuracyElement;
+        let startButton;
+        let resultCard;
+        let resultWpm;
+        let resultCpm;
+        let resultAccuracy;
+        let restartButton;
+        let progressBar;
+        let difficultyButtons;
+        
+        // Переменные состояния
+        let currentText = '';
+        let timeLeft = 60;
+        let timer_interval = null;
+        let charIndex = 0;
+        let mistakes = 0;
+        let isTyping = false;
+        let totalTypedChars = 0;
+        let currentDifficulty = 'medium';
+        
+        // Инициализация после загрузки DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            // Получаем все элементы DOM
+            textDisplay = document.getElementById('text-display');
+            textInput = document.getElementById('text-input');
+            timer = document.getElementById('timer');
+            wpmElement = document.getElementById('wpm');
+            cpmElement = document.getElementById('cpm');
+            accuracyElement = document.getElementById('accuracy');
+            startButton = document.getElementById('start-btn');
+            resultCard = document.getElementById('result-card');
+            resultWpm = document.getElementById('result-wpm');
+            resultCpm = document.getElementById('result-cpm');
+            resultAccuracy = document.getElementById('result-accuracy');
+            restartButton = document.getElementById('restart-btn');
+            progressBar = document.getElementById('progress-bar');
+            difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            
+            // Инициализируем приложение
+            init();
+        });
+        
+        // Инициализация
+        function init() {
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (isTyping) return;
+                    
+                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentDifficulty = button.getAttribute('data-difficulty');
+                    loadText();
+                });
+            });
+            
+            // Загрузка случайного текста
+            loadText();
+            
+            // Обработчики событий
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', restartGame);
+            textInput.addEventListener('input', checkTyping);
+            
+            console.log('Инициализация завершена');
+        }
+        
+        function loadText() {
+            const textArray = texts[currentDifficulty];
+            const randomIndex = Math.floor(Math.random() * textArray.length);
+            currentText = textArray[randomIndex];
+            
+            textDisplay.innerHTML = '';
+            
+            // Разбиваем текст на символы для отображения
+            currentText.split('').forEach(char => {
+                const charSpan = document.createElement('span');
+                charSpan.innerText = char;
+                textDisplay.appendChild(charSpan);
+            });
+            
+            // Сбрасываем все переменные
+            charIndex = 0;
+            mistakes = 0;
+            isTyping = false;
+            totalTypedChars = 0;
+            
+            // Сбрасываем статистику
+            wpmElement.innerText = '0';
+            cpmElement.innerText = '0';
+            accuracyElement.innerText = '0%';
+            
+            // Сбрасываем прогресс
+            progressBar.style.width = '0%';
+            
+            // Скрываем результаты
+            resultCard.style.display = 'none';
+            
+            console.log('Текст загружен:', currentText.substring(0, 20) + '...');
+        }
+        
+        function startGame() {
+            console.log('Игра начинается');
+            loadText();
+            textDisplay.classList.add('active');
+            textInput.disabled = false;
+            textInput.value = '';
+            textInput.focus();
+            startTimer();
+            startButton.disabled = true;
+            isTyping = true;
+            
+            // Выделяем первый символ
+            if (textDisplay.childNodes.length > 0) {
+                textDisplay.childNodes[0].classList.add('current-word');
+            }
+        }
+        
+        function restartGame() {
+            console.log('Перезапуск игры');
+            clearInterval(timer_interval);
+            timeLeft = 60;
+            timer.innerText = `${timeLeft}s`;
+            
+            textInput.value = '';
+            textInput.disabled = true;
+            textDisplay.classList.remove('active');
+            startButton.disabled = false;
+            
+            loadText();
+        }
+        
+        function startTimer() {
+            timeLeft = 60;
+            timer.innerText = `${timeLeft}s`;
+            
+            clearInterval(timer_interval); // Очищаем предыдущий таймер, если он был
+            
+            timer_interval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timer.innerText = `${timeLeft}s`;
+                    
+                    // Обновляем статистику во время печати
+                    updateStats();
+                } else {
+                    endGame();
+                }
+            }, 1000);
+            
+            console.log('Таймер запущен');
+        }
+        
+        function checkTyping() {
+            const typedText = textInput.value;
+            const typedChars = typedText.split('');
+            totalTypedChars = typedText.length;
+            
+            // Обновляем прогресс-бар
+            const progress = Math.min((charIndex / currentText.length) * 100, 100);
+            progressBar.style.width = `${progress}%`;
+            
+            // Проверяем каждый символ
+            let correctChars = 0;
+            
+            // Сначала убираем все классы со всех символов
+            for (let i = 0; i < textDisplay.childNodes.length; i++) {
+                textDisplay.childNodes[i].classList.remove('correct', 'incorrect', 'current-word');
+            }
+            
+            // Затем проверяем каждый введенный символ
+            for (let i = 0; i < typedChars.length; i++) {
+                if (i >= currentText.length) break;
+                
+                const charSpan = textDisplay.childNodes[i];
+                
+                if (typedChars[i] === currentText[i]) {
+                    charSpan.classList.add('correct');
+                    correctChars++;
+                } else {
+                    charSpan.classList.add('incorrect');
+                }
+            }
+            
+            // Выделяем текущий символ
+            charIndex = typedText.length;
+            if (charIndex < currentText.length) {
+                textDisplay.childNodes[charIndex].classList.add('current-word');
+            }
+            
+            // Обновляем индекс символа и счетчик ошибок
+            mistakes = charIndex - correctChars;
+            
+            // Проверяем, завершен ли текст
+            if (charIndex === currentText.length) {
+                endGame();
+                return;
+            }
+            
+            // Обновляем статистику
+            updateStats();
+            
+            console.log(`Набрано ${charIndex}/${currentText.length} символов, ошибок: ${mistakes}`);
+        }
+        
+        function updateStats() {
+            // Вычисляем слова в минуту (WPM)
+            // Считаем, что среднее слово содержит 5 символов
+            const timeElapsed = (60 - timeLeft) / 60; // в минутах
+            const timeElapsedAdjusted = timeElapsed <= 0 ? 1/60 : timeElapsed; // предотвращаем деление на ноль
+            
+            const wpm = Math.round((charIndex / 5) / timeElapsedAdjusted);
+            const cpm = Math.round(charIndex / timeElapsedAdjusted);
+            
+            // Вычисляем точность
+            const accuracy = totalTypedChars > 0 
+                ? Math.round(((totalTypedChars - mistakes) / totalTypedChars) * 100) 
+                : 0;
+            
+            // Обновляем элементы DOM
+            wpmElement.innerText = wpm;
+            cpmElement.innerText = cpm;
+            accuracyElement.innerText = `${accuracy}%`;
+            
+            console.log(`Статистика обновлена: WPM=${wpm}, CPM=${cpm}, Точность=${accuracy}%`);
+        }
+        
+        function endGame() {
+            console.log('Игра завершена');
+            clearInterval(timer_interval);
+            textInput.disabled = true;
+            textDisplay.classList.remove('active');
+            startButton.disabled = false;
+            isTyping = false;
+            
+            // Показываем результаты
+            resultWpm.innerText = wpmElement.innerText;
+            resultCpm.innerText = cpmElement.innerText;
+            resultAccuracy.innerText = accuracyElement.innerText;
+            resultCard.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
